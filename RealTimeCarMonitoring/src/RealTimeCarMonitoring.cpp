@@ -11,33 +11,37 @@
 
 using namespace std;
 
+/* Global Variables: Current time, global timer period, a mutex lock, and  an atomic boolean */
 int current_time = 0;
 int global_timer_period = 1;
 atomic<bool> executing(true);
 mutex mtx;
 
+/* Values for current time and sampling period for each variable */
 int current_fuel_consumption_time = 0;
-int fuel_consumption_period = 1;
+int fuel_consumption_period = 5;
 
 int current_engine_speed_time = 0;
-int engine_speed_period = 1;
+int engine_speed_period = 5;
 
 int current_engine_coolant_temperature_time = 0;
-int engine_coolant_temperature_period = 1;
+int engine_coolant_temperature_period = 5;
 
 int current_gear_time = 0;
-int gear_period = 1;
+int gear_period = 5;
 
 int current_vehicle_speed_time = 0;
-int vehicle_speed_period = 1;
+int vehicle_speed_period = 5;
 
+/* Importing arrays of data as objects */
 Gear gear;
 EngineCoolantTemperature engine_coolant_temperature;
 EngineSpeed engine_speed;
 FuelConsumption fuel_consumption;
 VehicleSpeed vehicle_speed;
 
-void start_global_timer(function<void(void)> func, unsigned int interval)
+/* Function to generate a timer to run periodically */
+void start_timer(function<void(void)> func, unsigned int interval)
 {
     thread([func, interval]() {
         while (executing.load())
@@ -48,61 +52,7 @@ void start_global_timer(function<void(void)> func, unsigned int interval)
     }).detach();
 }
 
-void start_fuel_consumption_timer(function<void(void)> func, unsigned int interval)
-{
-    thread([func, interval]() {
-        while (executing.load())
-        {
-            func();
-            this_thread::sleep_for(chrono::seconds(interval));
-        }
-    }).detach();
-}
-
-void start_engine_speed_timer(function<void(void)> func, unsigned int interval)
-{
-    thread([func, interval]() {
-        while (executing.load())
-        {
-            func();
-            this_thread::sleep_for(chrono::seconds(interval));
-        }
-    }).detach();
-}
-
-void start_engine_coolant_timer(function<void(void)> func, unsigned int interval)
-{
-    thread([func, interval]() {
-        while (executing.load())
-        {
-            func();
-            this_thread::sleep_for(chrono::seconds(interval));
-        }
-    }).detach();
-}
-
-void start_gear_timer(function<void(void)> func, unsigned int interval)
-{
-    thread([func, interval]() {
-        while (executing.load())
-        {
-            func();
-            this_thread::sleep_for(chrono::seconds(interval));
-        }
-    }).detach();
-}
-
-void start_vehicle_speed_timer(function<void(void)> func, unsigned int interval)
-{
-    thread([func, interval]() {
-        while (executing.load())
-        {
-            func();
-            this_thread::sleep_for(chrono::seconds(interval));
-        }
-    }).detach();
-}
-
+/* State Consumer: Consumes all data produced about the 5 variables and displays it */
 void state_consumer()
 {
 	cout << "Time: " << current_time
@@ -115,6 +65,7 @@ void state_consumer()
    current_time++;
 }
 
+/* Variable producer functions: Called back periodically. A mutex locks the variable so they may be updated for the consumer */
 void current_fuel_consumption_time_producer()
 {
 	mtx.lock();
@@ -150,17 +101,19 @@ void current_vehicle_speed_time_producer()
 	mtx.unlock();
 }
 
+/* Function to initialize and start all timers */
 void start_timers()
 {
 	executing = true;
-	start_global_timer(state_consumer, global_timer_period);
-	start_fuel_consumption_timer(current_fuel_consumption_time_producer, fuel_consumption_period);
-	start_engine_speed_timer(current_engine_speed_time_producer, engine_speed_period);
-	start_engine_coolant_timer(current_engine_coolant_temperature_time_producer, engine_coolant_temperature_period);
-	start_gear_timer(current_gear_time_producer, gear_period);
-	start_vehicle_speed_timer(current_vehicle_speed_time_producer, vehicle_speed_period);
+	start_timer(state_consumer, global_timer_period);
+	start_timer(current_fuel_consumption_time_producer, fuel_consumption_period);
+	start_timer(current_engine_speed_time_producer, engine_speed_period);
+	start_timer(current_engine_coolant_temperature_time_producer, engine_coolant_temperature_period);
+	start_timer(current_gear_time_producer, gear_period);
+	start_timer(current_vehicle_speed_time_producer, vehicle_speed_period);
 }
 
+/* Function to implement user interface. Allows a user to change the period */
 void user_keyboard_input()
 {
 	while(cin.get() == 'u')
@@ -243,6 +196,7 @@ void user_keyboard_input()
 }
 
 
+/* Main function. Starts timers and loops waiting for user input */
 int main()
 {
 	cout << "Welcome to the Real-Time Vehicle Monitoring System!"
