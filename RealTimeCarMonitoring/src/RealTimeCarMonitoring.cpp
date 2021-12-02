@@ -18,19 +18,19 @@ atomic<bool> executing(true);
 mutex mtx;
 
 /* Values for current time and sampling period for each variable */
-int current_fuel_consumption_time = 0;
+int current_fuel_consumption_value= 0;
 int fuel_consumption_period = 5;
 
-int current_engine_speed_time = 0;
+int current_engine_speed_value= 0;
 int engine_speed_period = 5;
 
-int current_engine_coolant_temperature_time = 0;
+int current_engine_coolant_temperature_value= 0;
 int engine_coolant_temperature_period = 5;
 
-int current_gear_time = 0;
+int current_gear_value= 0;
 int gear_period = 5;
 
-int current_vehicle_speed_time = 0;
+int current_vehicle_speed_value= 0;
 int vehicle_speed_period = 5;
 
 /* Importing arrays of data as objects */
@@ -56,48 +56,48 @@ void start_timer(function<void(void)> func, unsigned int interval)
 void state_consumer()
 {
 	cout << "Time: " << current_time
-	        << setw(20) << "\tFuel Consumption: " << fuel_consumption.values[current_fuel_consumption_time]
-	        << setw(20) << "\tEngine Speed: " << engine_speed.values[current_engine_speed_time]
-	        << setw(20) << "\tEngine Coolant Temperature: " << engine_coolant_temperature.values[current_engine_coolant_temperature_time]
-	        << setw(20) << "\tGear: " << gear.values[current_gear_time]
-	        << setw(20) << "\tVehicle Speed: " << vehicle_speed.values[current_vehicle_speed_time] << endl;
+	        << setw(20) << "\tFuel Consumption: " << current_fuel_consumption_value
+	        << setw(20) << "\tEngine Speed: " << current_engine_speed_value
+	        << setw(20) << "\tEngine Coolant Temperature: " << current_engine_coolant_temperature_value
+	        << setw(20) << "\tGear: " << current_gear_value
+	        << setw(20) << "\tVehicle Speed: " << current_vehicle_speed_value << endl;
 
    current_time++;
 }
 
 /* Variable producer functions: Called back periodically. A mutex locks the variable so they may be updated for the consumer */
-void current_fuel_consumption_time_producer()
+void current_fuel_consumption_value_producer()
 {
 	mtx.lock();
-	current_fuel_consumption_time = current_time;
+	current_fuel_consumption_value = fuel_consumption.values[current_time];
 	mtx.unlock();
 }
 
-void current_engine_speed_time_producer()
+void current_engine_speed_value_producer()
 {
 	mtx.lock();
-	current_engine_speed_time = current_time;
+	current_engine_speed_value = engine_speed.values[current_time];
 	mtx.unlock();
 }
 
-void current_engine_coolant_temperature_time_producer()
+void current_engine_coolant_temperature_value_producer()
 {
 	mtx.lock();
-	current_engine_coolant_temperature_time = current_time;
+	current_engine_coolant_temperature_value = engine_coolant_temperature.values[current_time];
 	mtx.unlock();
 }
 
-void current_gear_time_producer()
+void current_gear_value_producer()
 {
 	mtx.lock();
-	current_gear_time = current_time;
+	current_gear_value = gear.values[current_time];
 	mtx.unlock();
 }
 
-void current_vehicle_speed_time_producer()
+void current_vehicle_speed_value_producer()
 {
 	mtx.lock();
-	current_vehicle_speed_time = current_time;
+	current_vehicle_speed_value = vehicle_speed.values[current_time];
 	mtx.unlock();
 }
 
@@ -106,11 +106,11 @@ void start_timers()
 {
 	executing = true;
 	start_timer(state_consumer, global_timer_period);
-	start_timer(current_fuel_consumption_time_producer, fuel_consumption_period);
-	start_timer(current_engine_speed_time_producer, engine_speed_period);
-	start_timer(current_engine_coolant_temperature_time_producer, engine_coolant_temperature_period);
-	start_timer(current_gear_time_producer, gear_period);
-	start_timer(current_vehicle_speed_time_producer, vehicle_speed_period);
+	start_timer(current_fuel_consumption_value_producer, fuel_consumption_period);
+	start_timer(current_engine_speed_value_producer, engine_speed_period);
+	start_timer(current_engine_coolant_temperature_value_producer, engine_coolant_temperature_period);
+	start_timer(current_gear_value_producer, gear_period);
+	start_timer(current_vehicle_speed_value_producer, vehicle_speed_period);
 }
 
 /* Function to implement user interface. Allows a user to change the period */
