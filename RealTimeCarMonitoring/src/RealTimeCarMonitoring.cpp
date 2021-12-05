@@ -12,25 +12,25 @@
 using namespace std;
 
 /* Global Variables: Current time, global timer period, a mutex lock, and  an atomic boolean */
-int current_time = 0;
+int t = 0;
 int global_timer_period = 1;
 atomic<bool> executing(true);
 mutex mtx;
 
 /* Values for current time and sampling period for each variable */
-int current_fuel_consumption_value= 0;
+float fuel_consumption_value= 0;
 int fuel_consumption_period = 5;
 
-int current_engine_speed_value= 0;
+int engine_speed_value= 0;
 int engine_speed_period = 5;
 
-int current_engine_coolant_temperature_value= 0;
+int engine_coolant_temperature_value= 0;
 int engine_coolant_temperature_period = 5;
 
-int current_gear_value= 0;
+int gear_value= 0;
 int gear_period = 5;
 
-int current_vehicle_speed_value= 0;
+int vehicle_speed_value= 0;
 int vehicle_speed_period = 5;
 
 /* Importing arrays of data as objects */
@@ -55,49 +55,49 @@ void start_timer(function<void(void)> func, unsigned int interval)
 /* State Consumer: Consumes all data produced about the 5 variables and displays it */
 void state_consumer()
 {
-	cout << "Time: " << current_time
-	        << setw(20) << "\tFuel Consumption: " << current_fuel_consumption_value
-	        << setw(20) << "\tEngine Speed: " << current_engine_speed_value
-	        << setw(20) << "\tEngine Coolant Temperature: " << current_engine_coolant_temperature_value
-	        << setw(20) << "\tGear: " << current_gear_value
-	        << setw(20) << "\tVehicle Speed: " << current_vehicle_speed_value << endl;
+	cout << "Time: " << t
+	        << setw(20) << "\tFuel Consumption: " << setprecision(1) << fixed << fuel_consumption_value
+	        << setw(20) << "\tEngine Speed: " << engine_speed_value
+	        << setw(20) << "\tEngine Coolant Temperature: " << engine_coolant_temperature_value
+	        << setw(20) << "\tGear: " << gear_value
+	        << setw(20) << "\tVehicle Speed: " << vehicle_speed_value << endl;
 
-   current_time++;
+   t++;
 }
 
 /* Variable producer functions: Called back periodically. A mutex locks the variable so they may be updated for the consumer */
-void current_fuel_consumption_value_producer()
+void fuel_consumption_value_producer()
 {
 	mtx.lock();
-	current_fuel_consumption_value = fuel_consumption.values[current_time];
+	fuel_consumption_value = fuel_consumption.values[t];
 	mtx.unlock();
 }
 
-void current_engine_speed_value_producer()
+void engine_speed_value_producer()
 {
 	mtx.lock();
-	current_engine_speed_value = engine_speed.values[current_time];
+	engine_speed_value = engine_speed.values[t];
 	mtx.unlock();
 }
 
-void current_engine_coolant_temperature_value_producer()
+void engine_coolant_temperature_value_producer()
 {
 	mtx.lock();
-	current_engine_coolant_temperature_value = engine_coolant_temperature.values[current_time];
+	engine_coolant_temperature_value = engine_coolant_temperature.values[t];
 	mtx.unlock();
 }
 
-void current_gear_value_producer()
+void gear_value_producer()
 {
 	mtx.lock();
-	current_gear_value = gear.values[current_time];
+	gear_value = gear.values[t];
 	mtx.unlock();
 }
 
-void current_vehicle_speed_value_producer()
+void vehicle_speed_value_producer()
 {
 	mtx.lock();
-	current_vehicle_speed_value = vehicle_speed.values[current_time];
+	vehicle_speed_value = vehicle_speed.values[t];
 	mtx.unlock();
 }
 
@@ -105,12 +105,12 @@ void current_vehicle_speed_value_producer()
 void start_timers()
 {
 	executing = true;
+	start_timer(fuel_consumption_value_producer, fuel_consumption_period);
+	start_timer(engine_speed_value_producer, engine_speed_period);
+	start_timer(engine_coolant_temperature_value_producer, engine_coolant_temperature_period);
+	start_timer(gear_value_producer, gear_period);
+	start_timer(vehicle_speed_value_producer, vehicle_speed_period);
 	start_timer(state_consumer, global_timer_period);
-	start_timer(current_fuel_consumption_value_producer, fuel_consumption_period);
-	start_timer(current_engine_speed_value_producer, engine_speed_period);
-	start_timer(current_engine_coolant_temperature_value_producer, engine_coolant_temperature_period);
-	start_timer(current_gear_value_producer, gear_period);
-	start_timer(current_vehicle_speed_value_producer, vehicle_speed_period);
 }
 
 /* Function to implement user interface. Allows a user to change the period */
@@ -189,7 +189,7 @@ void user_keyboard_input()
 			case 6:
 				break;
 			default:
-				cout << "\nInvalid input. Enter 'u' to try again." << endl;
+				cout << "\nInvalid input. Enter 'u' to try again.\n" << endl;
 		}
 		start_timers();
 	}
