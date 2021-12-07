@@ -41,13 +41,14 @@ FuelConsumption fuel_consumption;
 VehicleSpeed vehicle_speed;
 
 /* Function to generate a timer to run periodically */
-void start_timer(function<void(void)> func, unsigned int interval)
+void start_timer(function<void(void)> producer_function, unsigned int period)
 {
-    thread([func, interval]() {
+    thread([producer_function, period]()
+	{
         while (executing.load())
         {
-            func();
-            this_thread::sleep_for(chrono::seconds(interval));
+        	producer_function();
+            this_thread::sleep_for(chrono::seconds(period));
         }
     }).detach();
 }
@@ -126,18 +127,20 @@ void user_keyboard_input()
 				<< "s\n\t Vehicle Speed Period:\t\t\t" << vehicle_speed_period << "s";
 
 
-		int choice;
+		string choice;
+		cin.ignore();
 		cout << "\n\nChange Period\nEnter number choice for variable:"
-				<< "\n\t(1) Fuel Consumption\n\t(2) Engine Speed (RPM)"
-				<< "\n\t(3) Engine Coolant Temperature\n\t(4) Current Gear"
-				<< "\n\t(5) Vehicle Speed\n\t(6) to resume execution\n\t\tChoice: ";
-		cin >> choice;
-
-		int new_period;
-		switch (choice)
+				<< "\n\tFuel Consumption\n\tEngine Speed"
+				<< "\n\tEngine Coolant Temperature\n\tCurrent Gear"
+				<< "\n\tVehicle Speed\n\tEnter to resume execution\n\t\tChoice: ";
+		getline(cin, choice);
+		if(!choice.empty())
 		{
-			case 1:
-				cout << "\nNew Fuel Consumption Period: ";
+			int new_period;
+
+			if(choice == "fuel consumption" || choice == "Fuel Consumption")
+			{
+				cout << "\t\tNew Fuel Consumption Period: ";
 				cin >> new_period;
 				if(!cin.fail())
 				{
@@ -145,9 +148,10 @@ void user_keyboard_input()
 				}
 				else
 					cout << "ERROR: Not an integer. Only integer values can be entered." << endl;
-				break;
-			case 2:
-				cout << "\nNew Engine Speed (RPM) Period: ";
+			}
+			else if(choice == "engine speed" || choice == "Engine Speed")
+			{
+				cout << "\t\tNew Engine Speed (RPM) Period: ";
 				cin >> new_period;
 				if(!cin.fail())
 				{
@@ -155,9 +159,10 @@ void user_keyboard_input()
 				}
 				else
 					cout << "ERROR: Not an integer. Only integer values can be entered." << endl;
-				break;
-			case 3:
-				cout << "\nNew Engine Coolant Temperature Period: ";
+			}
+			else if(choice == "engine coolant temperature" || choice == "Engine Coolant Temperature")
+			{
+				cout << "\t\tNew Engine Coolant Temperature Period: ";
 				cin >> new_period;
 				if(!cin.fail())
 				{
@@ -165,9 +170,10 @@ void user_keyboard_input()
 				}
 				else
 					cout << "ERROR: Not an integer. Only integer values can be entered." << endl;
-				break;
-			case 4:
-				cout << "\nNew Current Gear Period: ";
+			}
+			else if(choice == "current gear" || choice == "Current Gear")
+			{
+				cout << "\t\tNew Current Gear Period: ";
 				cin >> new_period;
 				if(!cin.fail())
 				{
@@ -175,22 +181,29 @@ void user_keyboard_input()
 				}
 				else
 					cout << "ERROR: Not an integer. Only integer values can be entered." << endl;
+			}
+			else if(choice == "vehicle speed" || choice == "Vehicle Speed")
+			{
+					cout << "\t\tNew Vehicle Speed Period: ";
+					cin >> new_period;
+					if(!cin.fail())
+					{
+						vehicle_speed_period = new_period;
+					}
+					else
+						cout << "ERROR: Not an integer. Only integer values can be entered." << endl;
+			}
+			else if(choice == "")
+			{
 				break;
-			case 5:
-				cout << "\nNew Vehicle Speed Period: ";
-				cin >> new_period;
-				if(!cin.fail())
-				{
-					vehicle_speed_period = new_period;
-				}
-				else
-					cout << "ERROR: Not an integer. Only integer values can be entered." << endl;
-				break;
-			case 6:
-				break;
-			default:
-				cout << "\nInvalid input. Enter 'u' to try again.\n" << endl;
+			}
+			else
+			{
+					cout << "\nInvalid input. Enter 'u' to try again.\n" << endl;
+			}
 		}
+
+		cout << endl;
 		start_timers();
 	}
 }
